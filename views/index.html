@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-900">
+    <div class="pt-8 max-w-7xl mx-auto">
+      <div id="feedback"></div>
+      <div id="login">
+        <form id="loginForm">
+          <div class="mb-6">
+            <label
+              for="confirm_password"
+              class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+              >Masukan Nama</label
+            >
+            <input
+              type="text"
+              id="name"
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              placeholder="Contoh: Ahmad"
+              required
+            />
+          </div>
+          <button
+            id="btn-login"
+            type="button"
+            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          >
+            Masuk
+          </button>
+        </form>
+      </div>
+
+      <div class="hidden" id="chat">
+        <div id="info"></div>
+
+        <div class="!text-white pb-2">
+          <ul id="messages"></ul>
+        </div>
+        <form id="form" action="">
+          <div class="mb-6">
+            <input
+              type="text"
+              id="input"
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+              placeholder="Masukan Pesan anda..."
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+          >
+            Kirim
+          </button>
+        </form>
+      </div>
+    </div>
+  </body>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io();
+    var timeout;
+
+    const divLogin = document.getElementById('login');
+    const btnLogin = document.getElementById('btn-login');
+    const chatRoom = document.getElementById('chat');
+    const form = document.getElementById('form');
+    const name = document.getElementById('name');
+    const input = document.getElementById('input');
+    const messages = document.getElementById('messages');
+
+    btnLogin.addEventListener('click', (e) => {
+      if (name.value == '') {
+        alert('Masukan nama');
+        return;
+      }
+
+      divLogin.classList.add('hidden');
+      chatRoom.classList.remove('hidden');
+
+      socket.emit('user-login', name.value);
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (input.value) {
+        socket.emit('chat message', input.value);
+        input.value = '';
+      }
+    });
+
+    function timeoutFunction() {
+      socket.emit('typing', false);
+    }
+
+    input.addEventListener('input', (e) => {
+      socket.emit('typing', e.target.value);
+      clearTimeout(timeout);
+      timeout = setTimeout(timeoutFunction, 2000);
+    });
+
+    socket.on('chat message', (msg) => {
+      const item = document.createElement('li');
+      item.textContent = msg;
+      messages.appendChild(item);
+      window.scrollTo(0, document.body.scrollHeight);
+    });
+
+    socket.on('user-login', (data) => {
+      info = document.getElementById('info');
+      info.innerHTML = '<p class="text-white">' + data + '</p>';
+    });
+
+    socket.on('typing', function (data) {
+      feedback = document.getElementById('feedback');
+
+      if (data) {
+        feedback.innerHTML =
+          '<p class="text-white"><em>' + data + ' is typing...</em></p>';
+      } else {
+        feedback.innerHTML = '';
+      }
+    });
+  </script>
+</html>
