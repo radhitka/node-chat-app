@@ -114,15 +114,13 @@
 
     socket.on('user-login', (data) => {
       info = document.getElementById('info');
-      info.innerHTML = '<p class="text-white">' + data + '</p>';
     });
 
     socket.on('typing', function (data) {
       feedback = document.getElementById('feedback');
 
       if (data) {
-        feedback.innerHTML =
-          '<p class="text-white"><em>' + data + ' is typing...</em></p>';
+        feedback.innerHTML = '<p class="text-white"><em>' + data + '</em></p>';
       } else {
         feedback.innerHTML = '';
       }

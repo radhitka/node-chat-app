@@ -45,7 +45,11 @@ io.on('connection', (socket) => {
   });
 
   socket.on('typing', (msg) => {
-    socket.broadcast.emit('typing', msg);
+    if (msg) {
+      socket.broadcast.emit('typing', `${socket.username} Sedang mengetik..`);
+    } else {
+      socket.broadcast.emit('typing', false);
+    }
   });
 });
 
